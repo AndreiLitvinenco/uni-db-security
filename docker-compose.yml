@@ -1,0 +1,36 @@
+services:
+  oracle-db:
+    image: container-registry.oracle.com/database/enterprise:23.26.1.0
+    container_name: oracle-db
+    hostname: oracle-db
+    ports:
+      - "1521:1521" # Oracle Listener
+      - "5500:5500" # OEM Express
+     # - "2484:2484" # TCPS (TLS) wallet connections
+    environment:
+      - ORACLE_SID=ORCLCDB
+      - ORACLE_PDB=ORCLPDB1
+      - ORACLE_PWD=YourSecurePassword123!
+      # Memory & CPU tuning (adjustable for 8GB / 12GB / 16GB RAM)
+      - INIT_SGA_SIZE=2560
+      - INIT_PGA_SIZE=768
+      - INIT_CPU_COUNT=2
+      - INIT_PROCESSES=150
+      # -------
+      - ORACLE_CHARACTERSET=AL32UTF8
+      - ENABLE_ARCHIVELOG=false
+     # - ENABLE_TCPS=true # auto-generates self-signed TLS wallet on port 2484
+    volumes:
+      - ./oradata:/opt/oracle/oradata
+      - ./scripts/setup:/opt/oracle/scripts/setup
+      - ./scripts/startup:/opt/oracle/scripts/startup
+    shm_size: 3g
+    mem_limit: 4.5g
+    stop_grace_period: 2m
+    restart: unless-stopped
+
+#Host RAM               INIT_SGA_SIZE   INIT_PGA_SIZE   shm_size        mem_limit       INIT_CPU_COUNT  INIT_PROCESSES
+#8 GB RAM               1536 (1.5 GB)   512 (0.5 GB)    2g              3g              2               150
+#12 GB RAM              2560 (2.5 GB)   768 (0.75 GB)   3g              4.5g            2               150
+#16 GB RAM              4096 (4 GB)     1024 (1 GB)     5g              6.5g            2               200
+
